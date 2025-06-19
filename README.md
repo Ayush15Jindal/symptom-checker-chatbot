@@ -12,32 +12,6 @@ MediBot is an AI-powered chatbot that helps users identify potential health issu
 
 ---
 
-## 🏗️ Project Structure
-
-```
-symptom-checker-chatbot/
-├── data/
-│   ├── intents.json
-│   └── medical_centers.json
-│
-├── model/
-│   ├── model.py
-│   ├── train.py
-│   └── model.pth
-│
-├── static/
-│   └── style.css
-├── templates/
-│   └── index.html
-├── app.py
-├── predict.py
-├── utils.py
-├── requirements.txt
-└── README.md
-```
-
----
-
 ## ⚙️ Setup Instructions
 
 1. Clone the repository:
