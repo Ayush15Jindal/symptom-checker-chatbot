@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MediBot – Symptom Checker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      background: #e0f7fa;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #chat-container {
+      width: 360px;
+      max-height: 92vh;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #chat-header {
+      background: #0288d1;
+      color: #fff;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+    #chat-box {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      background: #f5f9fa;
+    }
+    .message {
+      display: flex;
+      margin: 8px 0;
+    }
+    .bot { justify-content: flex-start; }
+    .user { justify-content: flex-end; }
+    .bubble {
+      max-width: 75%;
+      padding: 12px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      animation: fadein 0.2s ease-in-out;
+    }
+    .bot .bubble {
+      background: #fff;
+      border-bottom-left-radius: 4px;
+      color: #333;
+    }
+    .user .bubble {
+      background: #b3e5fc;
+      border-bottom-right-radius: 4px;
+      color: #000;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      margin: 4px 0;
+      padding-left: 12px;
+    }
+    .button-group button {
+      background: #e1f5fe;
+      border: none;
+      padding: 6px 12px;
+      margin: 4px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    .button-group button:hover {
+      background: #b3e5fc;
+    }
+    #input-area {
+      display: flex;
+      border-top: 1px solid #ddd;
+      padding: 8px;
+      background: #fff;
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 18px;
+      font-size: 14px;
+      outline: none;
+    }
+    #send-btn {
+      background: #0288d1;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      margin-left: 6px;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: 600;
+    }
+    #send-btn:hover {
+      background: #0277bd;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-header">💡 MediBot – Symptom Checker</div>
+    <div id="chat-box">
+      <div class="message bot">
+        <div class="bubble">Hi! How can I assist with your symptoms today?</div>
+      </div>
+    </div>
+    <div id="input-area">
+      <input id="user-input" placeholder="Type here..." autocomplete="off" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+    const chatBox = document.getElementById("chat-box");
+
+    function addMessage(sender, text, buttons=[]) {
+      const msg = document.createElement("div");
+      msg.className = `message ${sender}`;
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = text;
+      msg.appendChild(bubble);
+      if (buttons.length) {
+        const group = document.createElement("div");
+        group.className = "button-group";
+        buttons.forEach(b => {
+          const btn = document.createElement("button");
+          btn.textContent = b;
+          btn.onclick = () => sendMessage(b);
+          group.appendChild(btn);
+        });
+        msg.appendChild(group);
+      }
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage(text = null) {
+      const msg = text || input.value.trim();
+      if (!msg) return;
+      addMessage("user", msg);
+      input.value = "";
+      fetch("/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ message: msg })
+      })
+      .then(res => res.json())
+      .then(data => {
+        addMessage("bot", data.response.replace(/<br>/g,"<br>"));
+      });
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
